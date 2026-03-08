@@ -182,6 +182,49 @@
         // Optional: Show a success message inside the iframe itself
         form.innerHTML = "<h3 style='text-align: center; color: green;'>Application Submitted Successfully!</h3>";
     });
+    // 1. When the Vercel form finishes loading, it extracts its own inputs
+    window.onload = () => {
+        const formObj = document.getElementById('YOUR_FORM_ID'); // Change this to your form's actual ID
+        const elements = formObj.elements;
+        const schema = {};
+
+        for (let i = 0; i < elements.length; i++) {
+            const element = elements[i];
+            if (element.name && element.type !== 'button' && element.type !== 'submit') {
+                schema[element.name] = {
+                    type: element.tagName.toLowerCase() === 'select' ? 'dropdown' : element.type,
+                    required: element.required
+                };
+            }
+        }
+
+        // 2. It PUSHES the schema up to your React app
+        window.parent.postMessage({
+            type: 'EXTRACTED_FORM_SCHEMA',
+            schema: schema
+        }, '*'); 
+    };
+
+    // 3. It listens for the autofilled data coming BACK from React tracking
+    window.addEventListener('message', (event) => {
+        if (event.data && event.data.type === 'AUTOFILL_FORM_DATA') {
+            const formData = event.data.data;
+            
+            // 4. Fill in the Vercel form inputs automatically
+            for (const [key, value] of Object.entries(formData)) {
+                const field = document.getElementById(key) || document.getElementsByName(key)[0];
+                if (field && value) {
+                    field.value = value;
+                    field.style.backgroundColor = '#f0fdf4'; // Light green highlight
+                }
+            }
+        }
+    });
+
+    // 5. When the user clicks the final submit button
+    function onFinalSubmit() {
+        window.parent.postMessage({ action: 'FORM_SUBMITTED' }, '*');
+    }
 </script>
 </body>
 </html>

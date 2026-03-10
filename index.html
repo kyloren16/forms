@@ -227,17 +227,24 @@
                 const field = document.getElementById(key) || (fieldList.length > 0 ? fieldList[0] : null);
                 
                 if (field && value !== undefined && value !== null) {
-                    field.value = value;
-                    field.style.backgroundColor = '#f0fdf4'; // Light green highlight
+                    // Safety check to handle AI capitalization differences for dropdowns
+                    if (field.tagName.toLowerCase() === 'select' && typeof value === 'string') {
+                         for (let i = 0; i < field.options.length; i++) {
+                             if (field.options[i].value.toLowerCase() === value.toLowerCase()) {
+                                 field.selectedIndex = i;
+                                 field.style.backgroundColor = '#f0fdf4';
+                                 break;
+                             }
+                         }
+                    } else {
+                        field.value = value;
+                        field.style.backgroundColor = '#f0fdf4'; // Light green highlight
+                    }
                 }
             }
         }
     });
 
-    // 5. When the user clicks the final submit button
-    function onFinalSubmit() {
-        window.parent.postMessage({ action: 'FORM_SUBMITTED' }, '*');
-    }
 </script>
 </body>
 </html>

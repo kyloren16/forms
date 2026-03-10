@@ -73,7 +73,8 @@
     <div class="form-container">
         <h2>Application Form(Dummy)</h2>
         
-        <form action="#" method="POST">
+        <!-- ADDED id="applicationForm" HERE -->
+        <form id="applicationForm" action="#" method="POST">
             
             <div class="form-group">
                 <label for="applicantFullName">Applicant Full Name *</label>
@@ -182,9 +183,18 @@
         // Optional: Show a success message inside the iframe itself
         form.innerHTML = "<h3 style='text-align: center; color: green;'>Application Submitted Successfully!</h3>";
     });
+    
     // 1. When the Vercel form finishes loading, it extracts its own inputs
     window.onload = () => {
-        const formObj = document.getElementById('YOUR_FORM_ID'); // Change this to your form's actual ID
+        // CHANGED 'YOUR_FORM_ID' TO 'applicationForm' HERE
+        const formObj = document.getElementById('applicationForm'); 
+        
+        // Add a safety check in case the form isn't found
+        if (!formObj) {
+            console.error("Form with ID 'applicationForm' not found!");
+            return;
+        }
+        
         const elements = formObj.elements;
         const schema = {};
 
@@ -212,8 +222,11 @@
             
             // 4. Fill in the Vercel form inputs automatically
             for (const [key, value] of Object.entries(formData)) {
-                const field = document.getElementById(key) || document.getElementsByName(key)[0];
-                if (field && value) {
+                // Ensure field exists before trying to set its value
+                const fieldList = document.getElementsByName(key);
+                const field = document.getElementById(key) || (fieldList.length > 0 ? fieldList[0] : null);
+                
+                if (field && value !== undefined && value !== null) {
                     field.value = value;
                     field.style.backgroundColor = '#f0fdf4'; // Light green highlight
                 }
